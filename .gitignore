@@ -1,0 +1,6 @@
+# node modules
+src/front/node_modules
+src/back/node_modules
+
+# JetBrains
+.idea/

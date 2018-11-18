@@ -1,0 +1,17 @@
+{
+  "name": "strategy-builder",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Human Care Systems Challenge Task Backend API",
+  "author": "Jairo Panduro <jairo.l.panduro@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "node ./src/index.js",
+    "dev": "node"
+  },
+  "dependencies": {
+    "express": "^4.16.4",
+    "express-session": "^1.15.6"
+  },
+  "devDependencies": {}
+}
