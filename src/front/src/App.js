@@ -1,25 +1,35 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import './components/login/Auth';
+import axios from 'axios';
+import config from './config/default'
 
 class App extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+		  user: {
+		    isAuthenticated: false
+      }
+    }
+
+
+	}
+
+  onSubmitForm = () => {
+		this.axios.get('/login')
+  };
+
   render() {
     return (
       <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
+        {!this.state.user.isAuthenticated &&
+          <Auth
+	          user={this.state.user}
+	          onSubmit={this.onSubmitForm}
+          />
+        }
+        {this.state.user.isAuthenticated && <Auth onSubmit={this.onSubmitForm}></Auth>}
       </div>
     );
   }
