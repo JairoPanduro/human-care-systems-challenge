@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import {Table, Button, Glyphicon} from 'react-bootstrap';
+import {Table, Button, Glyphicon, FormControl} from 'react-bootstrap';
+import parseDate from '../helpers/date';
 
 export default class Tasks extends Component {
 	constructor(props) {
@@ -12,20 +13,16 @@ export default class Tasks extends Component {
 		};
 	}
 
-	onUpdate = (id) => {
-		const updateIds = {...this.state.onUpdate};
-		updateIds[id] = {
-			name: '',
-			description: '',
-			dueDate: ''
-		};
-		this.setState({onUpdate: updateIds})
+	onUpdate = (task) => {
+		const onUpdateTasks = {...this.state.onUpdate};
+		onUpdateTasks[task._id] = {...task};
+		this.setState({onUpdate: onUpdateTasks})
 	};
 
 	onCancelUpdate = (id) => {
-		const updateIds = {...this.state.onUpdate};
-		delete updateIds[id];
-		this.setState({onUpdate: updateIds});
+		const onUpdateTasks = {...this.state.onUpdate};
+		delete onUpdateTasks[id];
+		this.setState({onUpdate: onUpdateTasks});
 	};
 
 	onAddClick = () => {
@@ -36,6 +33,12 @@ export default class Tasks extends Component {
 		this.setState({isAddOperation: false});
 	};
 
+	handleUpdateTaskChange = (e, id, type) => {
+		const onUpdateTasks = {...this.state.onUpdate};
+		onUpdateTasks[id][type] = e.target.value;
+		this.setState({onUpdate: onUpdateTasks});
+	};
+
 	handleNewTaskChange = (e, type) => {
 		const task = {...this.state.newTask};
 		task[type] = e.target.value;
@@ -43,17 +46,23 @@ export default class Tasks extends Component {
 	};
 
 	createNewTask = () => {
-		this.props.onTaskCreate(this.state.newTask);
+		this.props.onCreate(this.state.newTask);
 		this.setState({newTask: {}})
 	};
 
 	updateTask = (id) => {
-		this.props.onTaskUpdate(id, this.state.onUpdate[id])
+		this.props
+			.onUpdate(id, this.state.onUpdate[id])
+			.then(() => this.onCancelUpdate(id))
+	};
+
+	deleteTask = id => {
+		return this.props.onDelete(id);
 	};
 
 	render() {
 		return (
-			<div>
+			<div className='well-lg'>
 				<div>
 					<Button onClick={this.onAddClick} bsStyle="success">
 						<Glyphicon glyph="plus"/> Add Task
@@ -61,73 +70,76 @@ export default class Tasks extends Component {
 				</div>
 				<Table>
 					<thead>
-						<th>
-							#
-						</th>
-						<th>
-							Task Name
-						</th>
-						<th>
-							Description
-						</th>
-						<th>
-							Due Date
-						</th>
-						<th></th>
-						<th></th>
+						<tr>
+							<th>
+								#
+							</th>
+							<th>
+								Task Name
+							</th>
+							<th>
+								Description
+							</th>
+							<th>
+								Due Date
+							</th>
+							<th>&nbsp;</th>
+							<th>&nbsp;</th>
+						</tr>
 					</thead>
 					<tbody>
 						{this.props.tasks.map(task => (
-							<tr key={task.id}>
-								<td>{task.id}</td>
+							<tr key={task._id}>
+								<td>{task._id}</td>
 								<td>
-									{this.state.onUpdate[task.id] &&
+									{this.state.onUpdate[task._id] &&
 										<FormControl
 											type="text"
-											value={this.state.onUpdate[task.id].name}
+											value={this.state.onUpdate[task._id].name}
 											placeholder="Enter name"
-											onChange={(e) => this.handleNewTaskChange(e, 'name')}
+											onChange={(e) => this.handleUpdateTaskChange(e, task._id, 'name')}
 										/>
 									}
-									{!this.state.onUpdate[task.id] && <span>{task.name}</span>}
+									{!this.state.onUpdate[task._id] && <span>{task.name}</span>}
 								</td>
 								<td>
-									{this.state.onUpdate[task.id] &&
+									{this.state.onUpdate[task._id] &&
 									<FormControl
 										type="text"
-										value={this.state.onUpdate[task.id].description}
+										value={this.state.onUpdate[task._id].description}
 										placeholder="Enter name"
-										onChange={(e) => this.handleNewTaskChange(e, 'description')}
+										onChange={(e) => this.handleUpdateTaskChange(e, task._id, 'description')}
 									/>
 									}
-									{!this.state.onUpdate[task.id] && <span>{task.description}</span>}
+									{!this.state.onUpdate[task._id] && <span>{task.description}</span>}
 								</td>
 								<td>
-									{this.state.onUpdate[task.id] &&
+									{this.state.onUpdate[task._id] &&
 									<FormControl
-										type="text"
-										value={this.state.onUpdate[task.id].dueDate}
+										type="date"
+										value={this.state.onUpdate[task._id].dueDate}
 										placeholder="Enter name"
-										onChange={(e) => this.handleNewTaskChange(e, 'dueDate')}
+										onChange={(e) => this.handleUpdateTaskChange(e, task._id, 'dueDate')}
 									/>
 									}
-									{!this.state.onUpdate[task.id] && <span>{task.dueDate}</span>}
+									{!this.state.onUpdate[task._id] && <span>{parseDate(task.dueDate)}</span>}
 								</td>
 								<td>
 									<Button
 										bsStyle="link"
-										onClick={() => this.state.onUpdate[task.id] ? this.updateTask(task.id) : this.onUpdate(task.id)}
+										onClick={() => this.state.onUpdate[task._id] ? this.updateTask(task._id) : this.onUpdate(task)}
 									>
 										Update
 									</Button>
-									{this.state.onUpdate[task.id] &&
-										<Button bsStyle="link" onClick={() => this.onCancelUpdate(task.id)}>
+									{this.state.onUpdate[task._id] &&
+										<Button bsStyle="link" onClick={() => this.onCancelUpdate(task._id)}>
 											Cancel
 										</Button>
 									}
 								</td>
 								<td>
-									<Glyphicon onClick={() => this.props.onDelete(task.id)} glyph="remove"/>
+									<Glyphicon className="on-delete"
+									           onClick={() => this.deleteTask(task._id)} glyph="remove"/>
 								</td>
 							</tr>
 						))}
@@ -152,7 +164,7 @@ export default class Tasks extends Component {
 								</td>
 								<td>
 									<FormControl
-										type="text"
+										type="date"
 										value={this.state.newTask.dueDate}
 										placeholder="Enter Due Date"
 										onChange={(e) => this.handleNewTaskChange(e, 'dueDate')}

@@ -18,16 +18,14 @@ services:
             HOST: ${BACK_HOST}
             PORT: ${BACK_PORT}
             DB_HOST: ${DB_HOST}
-            DB_USER: ${DB_USER}
-            DB_PASSWORD: ${DB_PASSWORD}
             DB_PORT: ${DB_PORT}
-            API_TOKEN: ${API_TOKEN}
+            DB_NAME: ${DB_NAME}
     hcs-frontend:
         restart: always
         build:
             context: .
             dockerfile: Dockerfile
-#        command: nodemon --legacy-watch --delay 10 start
+        command: nodemon --legacy-watch --delay 10 start
         ports:
             - "${HCS_FRONT_PORT}:3000"
         depends_on:
@@ -36,13 +34,15 @@ services:
             - ../src/front:/usr/src/app
         environment:
             NODE_ENV: ${NODE_ENV}
-            API_HOST: ${API_HOST}
-            API_TOKEN: ${API_TOKEN}
+            REACT_APP_DOCKER_HOST: ${DOCKER_HOST}
+            REACT_APP_HCS_BACK_PORT: ${HCS_BACK_PORT}
     db:
-        restart: 'no'
+        restart: always
+        privileged: true
         image: mongo:4.0
-        environment:
-            MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
-            MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
         volumes:
-            - ${DB_HOST_VOLUME_PATH}:/data/db
+            - data-volume:/data/db
+        ports:
+            - "${DB_PORT}:${DB_PORT}"
+volumes:
+    data-volume:

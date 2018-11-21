@@ -1,66 +1,84 @@
 import React, { Component } from 'react';
 import {
-	Form,
 	FormGroup,
 	ControlLabel,
 	FormControl,
-	HelpBlock
+	HelpBlock,
+	Button
 } from 'react-bootstrap';
 
 export default class Auth extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			login: null,
-			password: null,
+			login: '',
+			password: '',
 			loginErrMsg: '',
 			passErrMsg: ''
 		}
 	}
 
-	getLoginValidation() {
-		if (this.state.login.length === 0 ) {
-			this.setState({loginErrMsg: 'Login is empty'});
-			return 'error';
-		} else if (this.state.login.length > 3) {
-			this.setState({loginErrMsg: 'Login should contain more than 3 characters'});
-			return 'warning';
-		} else {
-			this.setState({loginErrMsg: ''});
+	login = (e) => {
+		e.preventDefault();
+
+		if (this.validate()) {
+			this.props.onSubmit({
+				login: this.state.login,
+				password: this.state.password,
+			});
+		}
+	};
+
+	validate = () => {
+		return this.state.loginErrMsg.length === 0 && this.state.passErrMsg.length === 0;
+	};
+
+	getLoginValidation(login) {
+		if (login.length === 0) {
+			return 'Login is empty'
 		}
 
-		return 'success';
+		return '';
 	}
 
-	getPasswordValidation() {
-
-		if (this.state.password.length === 0) {
-			this.setState({passErrMsg: 'Password is required'});
-			return 'error';
-		} else if (this.state.password.length > 5) {
-			this.setState({passErrMsg: 'Password should be longer than 5 chars!!'});
-			return 'warning';
-		} else {
-			this.setState({passErrMsg: ''});
+	getPasswordValidation(password) {
+		if (password.length === 0) {
+			return 'Password is required';
 		}
 
-		return 'success';
+		return '';
 	}
 
-	handleLoginChange(e) {
-		this.setState({login: e.target.value})
+	handleLoginChange = (e) => {
+		this.setState({
+			login: e.target.value,
+			loginErrMsg: this.getLoginValidation(e.target.value)
+		});
 	}
 
-	handlePasswordChange(e) {
-		this.setState({password: e.target.value})
+	handlePasswordChange = (e) => {
+		this.setState({
+			password: e.target.value,
+			passErrMsg: this.getPasswordValidation(e.target.value)
+		});
 	}
 
 	render() {
 		return (
-			<Form horizontal>
+			<form className="form">
+				{this.props.user.error &&
+					<FormGroup
+						controlId="formMessage"
+						validationState={'error'}
+					>
+						<HelpBlock>
+							{this.props.user.error}
+						</HelpBlock>
+					</FormGroup>
+				}
 				<FormGroup
 					controlId="formLogin"
-					validationState={this.getLoginValidation()}
+					validationState={this.state.loginErrMsg.length > 0 ? 'error' : null}
 				>
 					<ControlLabel>
 						Login
@@ -79,13 +97,13 @@ export default class Auth extends Component {
 				</FormGroup>
 				<FormGroup
 					controlId="formPassword"
-					validationState={this.getPasswordValidation()}
+					validationState={this.state.passErrMsg.length > 0 ? 'error' : null}
 				>
 					<ControlLabel>
 						Password
 					</ControlLabel>
 					<FormControl
-						type="text"
+						type="password"
 						value={this.state.password}
 						onChange={this.handlePasswordChange}
 					/>
@@ -96,9 +114,9 @@ export default class Auth extends Component {
 					}
 				</FormGroup>
 				<FormGroup>
-					<Button type="submit">Sign in</Button>
+					<Button onClick={this.login} type="submit">Sign in</Button>
 				</FormGroup>
-			</Form>
+			</form>
 		)
 	}
 }

@@ -1,37 +1,44 @@
 const express = require('express');
+const cors = require('cors');
 const AuthService = require('./services/AuthService');
 const TasksService = require('./services/TasksService');
 
 const app = express();
 
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded());
+
 app.get('/', (req, res) => {
 	res.send('Hello world\n');
 });
 
-app.post('/login', (req, res) => {
-	const user = (new AuthService).login(req, res);
-	res.json(user);
+app.post('/login',  async (req, res) => {
+	const user = await AuthService.login(req, res);
+	res.status(201).json(user);
 });
-
 
 app.get('/tasks', AuthService.isAuthenticated, (req, res) => {
 	const tasks = (new TasksService).getAll(req.user);
 	res.json(tasks);
 });
 
-app.post('/tasks', AuthService.isAuthenticated, (req, res) => {
-	const tasks = (new TasksService).createTask(req.user, req.task);
-	res.json(tasks);
+app.post('/tasks', AuthService.isAuthenticated, async (req, res) => {
+	const user = await (new TasksService).createTask(req);
+	res.status(201).json(user.tasks.pop());
 });
 
-app.put('/tasks/:id', AuthService.isAuthenticated, (req, res) => {
-	const task = (new TasksService).updateTask(req.user, req.params.id, req.task);
-	res.json(task);
+app.put('/tasks/:id',
+	AuthService.isAuthenticated,
+	TasksService.isRequestValid,
+	async (req, res) => {
+		const user = await (new TasksService).updateTask(req);
+		res.json(user);
 });
 
-app.delete('/tasks/:id', AuthService.isAuthenticated, (req, res) => {
-	const task = (new TasksService).deleteTask(req.user, req.params.id);
-	res.json(task);
+app.delete('/tasks/:id', AuthService.isAuthenticated, TasksService.isRequestValid, (req, res) => {
+	(new TasksService).deleteTask(req.user, req.params.id);
+	res.status(202).send();
 });
 
 

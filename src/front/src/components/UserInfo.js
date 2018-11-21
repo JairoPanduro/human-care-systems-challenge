@@ -1,18 +1,27 @@
 import React, { Component } from 'react';
-import {Button} from 'react-bootstrap';
+import {
+	Button,
+	Label,
+	Col
+} from 'react-bootstrap';
+import parseDate from '../helpers/date';
 
 export default class UserInfo extends Component {
 	render() {
 		return (
 			<React.Fragment>
-				<div>
+				<Col xs={2} xsOffset={10}>
 					<Button onClick={this.props.onLogout}>
 						Logout
 					</Button>
-				</div>
-				<div>
+				</Col>
+				<div className="well-lg">
 					<Label bsStyle="info">User Info</Label>{' '}
-					Name: {this.props.user.name}, Email: {this.props.user.email}, Birthday: {this.props.user.birthday}
+					<div>
+						Name: {this.props.user.name}, <br/>
+						Email: {this.props.user.email}, <br/>
+						Birthday: {parseDate(this.props.user.birthday)}<br/>
+					</div>
 				</div>
 			</React.Fragment>
 		)

@@ -8,7 +8,7 @@ export default class Dashboard extends Component {
 			<React.Fragment>
 				<UserInfo user={this.props.user} onLogout={this.props.onLogout} />
 				<Tasks
-					tasks={this.props.tasks}
+					tasks={this.props.user.tasks}
 					onDelete={this.props.onTaskDelete}
 					onCreate={this.props.onTaskCreate}
 					onUpdate={this.props.onTaskUpdate}

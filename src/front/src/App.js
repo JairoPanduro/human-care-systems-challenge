@@ -12,8 +12,8 @@ class App extends Component {
 		  user: {
 		    isAuthenticated: false,
 			  token: false,
-      },
-	    tasks: []
+	      tasks: []
+      }
     };
 
 	}
@@ -22,7 +22,7 @@ class App extends Component {
   	if (!this.axios) {
 		  this.axios = axios.create({
 			  baseURL: config.apiUrl,
-			  header: {
+			  headers: {
 				  Authorization: `Token ${this.state.user.token}`
 			  }
 		  });
@@ -32,8 +32,17 @@ class App extends Component {
 	};
 
   onLoginSubmit = data => {
-		axios.post('/login', data).then(resp => {
-			this.setState({user: resp.data})
+		axios.post(config.apiUrl + '/login', data).then(resp => {
+			this.setState(state => {
+				const prevState = {...state};
+				if (resp.data.error) {
+					prevState.user.error = resp.data.error;
+				} else {
+					prevState.user = resp.data;
+					prevState.user.isAuthenticated = true;
+				}
+				return {...prevState};
+			});
 		});
   };
 
@@ -47,24 +56,19 @@ class App extends Component {
 			.getAxios()
 			.delete(`/tasks/${id}`)
 			.then(() => {
-				const tasks = this.state.tasks.filter(task => task.id !== id);
-				this.setState({tasks});
+				const tasks = this.state.user.tasks.filter(task => task._id !== id);
+				const user = {...this.state.user, tasks};
+				this.setState({user});
 			})
 	};
 
 	onTaskUpdate = (id, data) => {
-		this
+		return this
 			.getAxios()
 			.put(`/tasks/${id}`, data)
-			.then(() => {
-				const tasks = this.state.tasks;
-				tasks.forEach((task, taskId) => {
-					if (task.id === id) {
-						tasks[taskId] = data;
-					}
-				});
-
-				this.setState({tasks});
+			.then((resp) => {
+				const user = {...this.state.user, tasks: resp.data.tasks};
+				this.setState({user});
 			});
 	};
 
@@ -73,9 +77,10 @@ class App extends Component {
 			.getAxios()
 			.post(`/tasks`, data)
 			.then((resp) => {
-				const tasks = this.state.tasks;
+				const tasks = this.state.user.tasks;
 				tasks.push(resp.data);
-				this.setState({tasks});
+				const user = {...this.state.user, tasks};
+				this.setState({user});
 			});
 	};
 
@@ -91,7 +96,6 @@ class App extends Component {
         {this.state.user.isAuthenticated &&
           <Dashboard
 	          user={this.state.user}
-	          tasks={this.state.tasks}
 	          onLogout={this.onLogout}
 	          onTaskCreate={this.onTaskCreate}
 	          onTaskUpdate={this.onTaskUpdate}
